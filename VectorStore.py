@@ -1,5 +1,6 @@
 import mimetypes
 import pickle
+import shutil
 import uuid
 import numpy as np
 
@@ -35,23 +36,15 @@ class VectorStore:
         similarity = dot_product / (magnitude_a * magnitude_b)
         return similarity
 
-    def store(self, userId, doc):
-        # Step i: Give uuid to doc
-        docId = uuid.uuid4()
-        # Save the document in the appropriate user directory
-        saved_doc_path = f"Docs/{userId}/{docId}"
-        os.makedirs(f"Docs/{userId}", exist_ok=True)
-        with open(saved_doc_path, "wb") as saved_doc_file:
-            saved_doc_file.write(doc.read())
-
+    def store(self, userId, file_path, docId):
         # Add the UUID to URL map entry
-        self.uuid_url_map[docId] = saved_doc_path
+        self.uuid_url_map[docId] = file_path
 
         # Extract MIME type
-        mime_type, _ = mimetypes.guess_type(doc)
+        mime_type, _ = mimetypes.guess_type(file_path)
 
         # Only accept pdf, png, jpeg, tiff, docx, pptx, xlsx
-        if mime_type not in ['application/pdf', 'image/png', 'image/jpeg', 'image/tiff',
+        if mime_type not in ['application/pdf', 'image/png', 'image/jpeg', 'image/tiff', 'text/plain'
                              'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                              'application/vnd.openxmlformats-officedocument.presentationml.presentation',
                              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']:
@@ -59,7 +52,7 @@ class VectorStore:
 
         # Step ii: Use OCR to extract contents for each page
         processor = DocumentAIProcessor(project_id, location, processor_id, mime_type)
-        page_contents = processor.process_document(doc)
+        page_contents = processor.process_document(file_path)
 
         # Step iii: Generate the embedding of each page/content
         contents_embeddings = getDocEmbeddings(page_contents)

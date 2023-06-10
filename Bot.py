@@ -11,13 +11,13 @@ class Bot:
         self.openai_api = openai_api
         self.vectorStore = vectorStore
 
-    def digestDoc(self, userId, doc):
-        self.vectorStore.store(userId, doc)
+    def digestDoc(self, userId, doc, docId):
+        self.vectorStore.store(userId, doc, docId)
 
     async def getAnswer(self, userId, ques, k=2):
         # Step 1: Get the context from the vector store
         context = self.vectorStore.cosine_similarity_search(userId, ques, k)
-        # print(context)
+        print(context)
 
         # Create an empty reference list
         reference_list = []
@@ -26,7 +26,7 @@ class Bot:
         for document in context:
             # Add the document's UUID and page number to the reference list
             # Convert the UUID object to a string using str()
-            reference_list.append({'uuid': str(document['docId']), 'pageNo': document['pageNo']})
+            reference_list.append({'link': str(document['url']), 'pageNo': document['pageNo']})
 
         # Step 2: Get the answer using OpenAI
         messages = [

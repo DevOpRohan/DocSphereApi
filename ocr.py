@@ -8,7 +8,8 @@ load_dotenv(dotenv_path=".env")  # Load environment variables from .env file
 project_id = 'vision-386522'
 location = 'eu'  # Format is 'us' or 'eu'
 processor_id = 'c9677a16c53c916b'  # Create processor before running sample
-file_path = './Winnie_the_Pooh_3_Pages.pdf'
+file_path = 'Docs/user1/48d34c55-bee8-47ca-af95-94b4a2b9da94.pdf'
+
 mime_type = 'application/pdf'  # Refer to https://cloud.google.com/document-ai/docs/file-types for supported file types
 field_mask = "text,pages.pageNumber"  # Optional. The fields to return in the Document object.
 
@@ -31,7 +32,6 @@ class DocumentAIProcessor:
         # You must set the api_endpoint if you use a location other than 'us'.
         opts = ClientOptions(api_endpoint=f"{location}-documentai.googleapis.com")
         self.client = documentai.DocumentProcessorServiceClient(client_options=opts)
-
 
     def process_document(self, file_path: str) -> List[str]:
         name = self.client.processor_path(self.project_id, self.location, self.processor_id)
@@ -75,8 +75,9 @@ class DocumentAIProcessor:
             response += text[start_index:end_index]
         return response
 
-#usage
+
+# # usage
 # processor = DocumentAIProcessor(project_id, location, processor_id, mime_type)
 # page_contents = processor.process_document(file_path)
 # print(len(page_contents))
-# print(page_contents)
+# # print(page_contents)
