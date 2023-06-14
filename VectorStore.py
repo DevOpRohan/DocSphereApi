@@ -85,8 +85,46 @@ class VectorStore:
                     'content': res[3], 'similarity': res[0]} for res in top_k_results]
         return results
 
+    def euclidean(self, a, b):
+        diff = np.array(a) - np.array(b)
+        squared_diff = np.square(diff)
+        sum_squared_diff = np.sum(squared_diff)
+        euclidean_dist = np.sqrt(sum_squared_diff)
+        return euclidean_dist
 
-"""
+    def hybrid_similarity_comparator(self, a, b, query_embedding):
+        if a[0] != b[0]:
+            return b[0] - a[0]  # Compare cosine similarity (descending order)
+        else:
+            # Calculate Euclidean distance and compare (ascending order)
+            euclidean_a = self.euclidean(query_embedding, a[4])
+            euclidean_b = self.euclidean(query_embedding, b[4])
+            return euclidean_a - euclidean_b
+
+    def hybrid_similarity_search(self, userId, query, k):
+        # Step i: Generate the embedding of query
+        query_embedding = getQueryEmbeddings(query)
+
+        # Step ii: Perform cosine similarity search on all the embeddings of that user
+        user_data = self.data.get(userId, [])
+        similarities = []
+
+        for docId, contents_with_embeddings in user_data:
+            for pageNo, (content, embedding) in enumerate(contents_with_embeddings):
+                similarity = self.cosine(query_embedding, embedding)
+                similarities.append((similarity, str(docId), pageNo, content, embedding))
+
+        # Step iii: Sort using the hybrid_similarity_comparator function
+        sorted_similarities = sorted(similarities, key=lambda x: (-x[0], self.euclidean(query_embedding, x[4])))
+
+        top_k_results = sorted_similarities[:k]
+
+        # Replacing the UUID with the document URL
+        results = [{'url': self.uuid_url_map[uuid.UUID(res[1])], 'pageNo': res[2] + 1,
+                    'content': res[3], 'similarity': res[0]} for res in top_k_results]
+        return results
+
+
 # usage
 vectorStore = VectorStore('Persistence/vector_store.pkl')
 doc = './Docs/TestDoc.pdf'
@@ -103,4 +141,9 @@ while True:
     # print result line by line
     for res in result:
         print(res)
-"""
+
+    print("Hybrid Search Results")
+    result = vectorStore.hybrid_similarity_search(userId, query, k)
+    # print result line by line
+    for res in result:
+        print(res)

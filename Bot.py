@@ -16,7 +16,9 @@ class Bot:
 
     async def getAnswer(self, userId, ques, k=2):
         # Step 1: Get the context from the vector store
-        context = self.vectorStore.cosine_similarity_search(userId, ques, k)
+        # context = self.vectorStore.cosine_similarity_search(userId, ques, k)
+        context = self.vectorStore.hybrid_similarity_search(userId, ques, k)
+
         print(context)
 
         # Create an empty reference list
