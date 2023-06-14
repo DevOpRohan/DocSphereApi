@@ -124,7 +124,7 @@ class VectorStore:
                     'content': res[3], 'similarity': res[0]} for res in top_k_results]
         return results
 
-
+"""
 # usage
 vectorStore = VectorStore('Persistence/vector_store.pkl')
 doc = './Docs/TestDoc.pdf'
@@ -147,3 +147,4 @@ while True:
     # print result line by line
     for res in result:
         print(res)
+"""
